@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: room-service
+spec:
+  type: LoadBalancer
+  ports:
+    - name: backend-http
+      protocol: TCP
+      port: 8090
+      targetPort: 8090
+  selector:
+    app: room-backend
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: room-backend
+spec:
+  selector:
+    matchLabels:
+      app: room-backend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: room-backend
+    spec:
+      containers:
+        - image: room
+          name: room-backend
+          imagePullPolicy: Never
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: k8s
+            - name: ROOM_PORT
+              value: "8090"
+            - name: QUEUE_PORT
+              value: "8090"
+            - name: MONGODB_USER
+              value: root
+            - name: MONGODB_PASSWORD
+              value: "123456"
+            - name: MONGO_DB
+              value: room_db
+            - name: MONGO_HOST
+              value: "room-db-service.default.svc.cluster.local"
+            - name: MONGO_PORT
+              value: "27017"
+            - name: KAFKA_HOST
+              value: "kafka-service.default.svc.cluster.local:9092"
+          ports:
+            - containerPort: 8090

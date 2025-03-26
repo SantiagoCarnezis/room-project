@@ -1,0 +1,17 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: room-init-replicaset
+spec:
+  template:
+    spec:
+      containers:
+        - name: room-init-replicaset
+          image: mongo:6.0
+          command:
+            - mongosh
+            - "--host"
+            - "room-db-0.room-db-service.default.svc.cluster.local:27017"
+            - "--eval"
+            - "rs.initiate({_id: 'rs-room', members: [{_id:0, host: 'room-db-0.room-db-service.default.svc.cluster.local:27017'}, {_id:1, host: 'room-db-1.room-db-service.default.svc.cluster.local:27017'}, {_id:2, host: 'room-db-2.room-db-service.default.svc.cluster.local:27017'}]})"
+      restartPolicy: OnFailure
